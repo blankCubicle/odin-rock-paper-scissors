@@ -14,7 +14,7 @@ function getComputerChoice() {
 }
 
 function getHumanChoice(message = 'What is your choice?') {
-  let humanInput = prompt(message, '');
+  let humanInput = prompt(message);
 
   // human pressed 'Cancel' button on prompt
   if (humanInput === null) return 'cancel';
@@ -33,34 +33,59 @@ function getHumanChoice(message = 'What is your choice?') {
   }
 }
 
-const rules = {
-  rock: { beatenBy: 'paper' },
-  paper: { beatenBy: 'scissors' },
-  scissors: { beatenBy: 'rock' },
-};
+function playGame() {
+  const RULES = {
+    rock: { beatenBy: 'paper' },
+    paper: { beatenBy: 'scissors' },
+    scissors: { beatenBy: 'rock' },
+  };
 
-let computerScore = 0;
-let humanScore = 0;
+  let humanScore = 0;
+  let computerScore = 0;
+  let isRoundCanceled = false;
 
-function playRound(humanChoice, computerChoice) {
-  if (humanChoice === 'cancel') return console.log('Round canceled :(');
+  console.log('==> First to 3 wins! <==');
 
-  console.log(`You chose ${humanChoice}`);
-  console.log(`Computer chose ${computerChoice}`);
+  while (humanScore < 3 && computerScore < 3) {
+    playRound(getHumanChoice());
+    console.log(`( You: ${humanScore} - Computer: ${computerScore} )`);
 
-  if (humanChoice === computerChoice) {
-    return console.log(`<== It's a tie! ==>`);
+    if (isRoundCanceled) return;
   }
 
-  if (rules[humanChoice].beatenBy === computerChoice) {
-    computerScore += 1;
-    console.log(
-      `<== You lose :( — ${humanChoice} is beaten by ${computerChoice} ==>`,
-    );
+  if (computerScore > humanScore) {
+    console.log('==> You LOST the game :( <==');
   } else {
-    humanScore += 1;
-    console.log(`<== You WON! — ${humanChoice} beats ${computerChoice} ==>`);
+    console.log('==> You WON the game :D <==');
+  }
+
+  function playRound(humanChoice) {
+    if (humanChoice === 'cancel') {
+      isRoundCanceled = true;
+      return console.log('Game canceled :(');
+    }
+
+    const computerChoice = getComputerChoice();
+
+    console.log(`--- You chose ${humanChoice}`);
+    console.log(`--- Computer chose ${computerChoice}`);
+
+    if (humanChoice === computerChoice) {
+      return console.log(`<== It's a tie! ==>`);
+    }
+
+    if (RULES[humanChoice].beatenBy === computerChoice) {
+      computerScore += 1;
+      console.log(
+        `<== You lose this round :( — ${humanChoice} is beaten by ${computerChoice} ==>`,
+      );
+    } else {
+      humanScore += 1;
+      console.log(
+        `<== You WON this round! — ${humanChoice} beats ${computerChoice} ==>`,
+      );
+    }
   }
 }
 
-playRound(getHumanChoice(), getComputerChoice());
+playGame();
