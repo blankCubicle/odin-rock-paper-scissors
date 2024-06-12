@@ -58,19 +58,6 @@ function getRoundResult(humanChoice, computerChoice) {
 }
 
 function displayRoundResult(round) {
-  let color;
-  switch (round.winner) {
-    case 'computer':
-      color = '#f38ba8';
-      break;
-    case 'human':
-      color = '#a6e3a1';
-      break;
-    default:
-      color = '#f9e2af';
-      break;
-  }
-
   roundResult.innerHTML = `
   <p>${round.choices}</p>
   <h3 class="${round.winner}">${round.result}</h3>
