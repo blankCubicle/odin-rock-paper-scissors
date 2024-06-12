@@ -1,91 +1,121 @@
+const RULES = {
+  rock: { action: 'smashes', beatenBy: 'paper', beatenHow: 'is covered' },
+  paper: { action: 'covers', beatenBy: 'scissors', beatenHow: 'is cut' },
+  scissors: { action: 'cut', beatenBy: 'rock', beatenHow: 'are smashed' },
+};
+
+const roundResult = document.querySelector('.round-result');
+const humanScoreSpan = document.querySelector('.human-score');
+const computerScoreSpan = document.querySelector('.computer-score');
+const characterChoices = document.querySelector('.character-choice');
+
+Array.from(characterChoices.children).forEach((button) =>
+  button.addEventListener('click', playRound),
+);
+
+let humanScore = 0;
+let computerScore = 0;
+
 function getComputerChoice() {
-  // Generate a random number from 1 to 3
-  const randomNumber = Math.ceil(Math.random() * 3);
+  const randomNumber = Math.floor(Math.random() * 3);
 
   switch (randomNumber) {
-    case 1:
+    case 0:
       return 'rock';
-    case 2:
+    case 1:
       return 'paper';
-    case 3:
+    case 2:
     default:
       return 'scissors';
   }
 }
 
-function getHumanChoice(message = 'What is your choice?') {
-  let humanInput = prompt(message);
+function getRoundResult(humanChoice, computerChoice) {
+  let result;
+  let reason;
+  let winner;
 
-  // human pressed 'Cancel' button on prompt
-  if (humanInput === null) return 'cancel';
-
-  humanInput = humanInput.toLowerCase();
-
-  switch (humanInput) {
-    case 'rock':
-    case 'paper':
-    case 'scissors':
-      return humanInput;
-    default:
-      return getHumanChoice(
-        "I didn't get that, try again? (rock/paper/scissors)",
-      );
-  }
-}
-
-function playGame() {
-  const RULES = {
-    rock: { beatenBy: 'paper' },
-    paper: { beatenBy: 'scissors' },
-    scissors: { beatenBy: 'rock' },
-  };
-
-  let humanScore = 0;
-  let computerScore = 0;
-  let isRoundCanceled = false;
-
-  console.log('==> First to 3 wins! <==');
-
-  while (humanScore < 3 && computerScore < 3) {
-    playRound(getHumanChoice());
-    console.log(`( You: ${humanScore} - Computer: ${computerScore} )`);
-
-    if (isRoundCanceled) return;
-  }
-
-  if (computerScore > humanScore) {
-    console.log('==> You LOST the game :( <==');
+  if (humanChoice === computerChoice) {
+    result = "It's a tie!";
+    reason = `You both chose ${humanChoice}.`;
+    winner = 'none';
+  } else if (RULES[humanChoice].beatenBy === computerChoice) {
+    result = 'Computer wins the round.';
+    reason = `${humanChoice} ${RULES[humanChoice].beatenHow} by ${computerChoice}.`;
+    winner = 'computer';
   } else {
-    console.log('==> You WON the game :D <==');
+    result = 'You win this round!';
+    reason = `${humanChoice} ${RULES[humanChoice].action} ${computerChoice}.`;
+    winner = 'human';
   }
 
-  function playRound(humanChoice) {
-    if (humanChoice === 'cancel') {
-      isRoundCanceled = true;
-      return console.log('Game canceled :(');
-    }
+  return {
+    choices: `You chose ${humanChoice}, computer chose ${computerChoice}.`,
+    result: result,
+    winner: winner,
+    reason: reason,
+  };
+}
 
-    const computerChoice = getComputerChoice();
+function displayRoundResult(round) {
+  let color;
+  switch (round.winner) {
+    case 'computer':
+      color = '#f38ba8';
+      break;
+    case 'human':
+      color = '#a6e3a1';
+      break;
+    default:
+      color = '#f9e2af';
+      break;
+  }
 
-    console.log(`--- You chose ${humanChoice}`);
-    console.log(`--- Computer chose ${computerChoice}`);
-
-    if (humanChoice === computerChoice) {
-      return console.log(`<== It's a tie! ==>`);
-    }
-
-    if (RULES[humanChoice].beatenBy === computerChoice) {
-      computerScore += 1;
-      console.log(
-        `<== You lose this round :( — ${humanChoice} is beaten by ${computerChoice} ==>`,
-      );
-    } else {
-      humanScore += 1;
-      console.log(
-        `<== You WON this round! — ${humanChoice} beats ${computerChoice} ==>`,
-      );
-    }
+  roundResult.innerHTML = `
+  <p>${round.choices}</p>
+  <h3 class="${round.winner}">${round.result}</h3>
+  <p class="reason">${round.reason}</p>
+  `;
+  if (round.result !== 'tie') {
+    humanScoreSpan.textContent = humanScore;
+    computerScoreSpan.textContent = computerScore;
   }
 }
 
-playGame();
+function endGame(humanWon) {
+  characterChoices.remove();
+
+  const resetButton = document.createElement('button');
+  resetButton.classList.add('reset');
+  resetButton.textContent = 'Play again?';
+  resetButton.onclick = () => window.location.reload();
+
+  const header = document.querySelector('.actions-title');
+  header.textContent = humanWon ? 'You WON the game!' : 'You LOST the game :(';
+  header.style.color = humanWon ? '#a6e3a1' : '#f38ba8';
+
+  header.parentNode.append(resetButton);
+}
+
+function playRound(event) {
+  const humanChoice = event.target.id;
+  const computerChoice = getComputerChoice();
+  const round = getRoundResult(humanChoice, computerChoice);
+
+  switch (round.winner) {
+    case 'computer':
+      computerScore += 1;
+      break;
+    case 'human':
+      humanScore += 1;
+      break;
+    default:
+      break;
+  }
+
+  displayRoundResult(round);
+
+  if (humanScore >= 3 || computerScore >= 3) {
+    endGame(humanScore > computerScore);
+  }
+}
