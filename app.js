@@ -63,7 +63,7 @@ function displayRoundResult(round) {
   <h3 class="${round.winner}">${round.result}</h3>
   <p class="reason">${round.reason}</p>
   `;
-  if (round.result !== 'tie') {
+  if (round.winner !== 'none') {
     humanScoreSpan.textContent = humanScore;
     computerScoreSpan.textContent = computerScore;
   }
